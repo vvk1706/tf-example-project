@@ -1,0 +1,141 @@
+# ============================================
+# AWS Configuration
+# ============================================
+
+aws_region   = "us-east-1"
+project_name = "my-infrastructure"
+environment  = "production"
+
+# ============================================
+# VM Configuration
+# ============================================
+
+vm_count              = 3
+vm_instance_type      = "m5.2xlarge"  # 8 vCPU x 64GB RAM
+vm_ebs_volume_size    = 100           # GB per VM
+vm_ebs_volume_type    = "gp3"
+vm_ebs_iops           = 3000
+vm_ebs_throughput     = 125
+vm_root_volume_size   = 50
+
+# ============================================
+# OpenShift Configuration
+# ============================================
+
+openshift_version                      = "4.14"
+openshift_cluster_name                 = "openshift-cluster"
+openshift_base_domain                  = "example.com"
+openshift_worker_count                 = 7
+openshift_worker_instance_type         = "m5.4xlarge"  # 16 vCPU x 96GB RAM
+openshift_control_plane_count          = 3
+openshift_control_plane_instance_type  = "m5.xlarge"   # 4 vCPU x 16GB RAM
+openshift_root_volume_size             = 120
+openshift_pull_secret_path             = "~/.openshift/pull-secret.json"
+
+# ============================================
+# Storage Configuration
+# ============================================
+
+odf_storage_size        = 1024  # 1TB in GB
+odf_device_size         = 512   # Size of each ODF device in GB
+enable_ebs_encryption   = true
+ebs_kms_key_id          = ""    # Leave empty for AWS managed key
+
+# Backup Configuration
+enable_ebs_snapshots         = true
+ebs_snapshot_retention_days  = 7
+
+# ============================================
+# Network Configuration
+# ============================================
+
+vm_vpc_cidr        = "10.0.0.0/16"
+openshift_vpc_cidr = "10.1.0.0/16"
+
+# Leave empty for automatic AZ selection
+availability_zones = []
+
+# VPC Settings
+enable_vpc_flow_logs  = true
+enable_nat_gateway    = true
+nat_gateway_per_az    = true  # More expensive but more resilient
+enable_dns_hostnames  = true
+enable_dns_support    = true
+enable_ipv6           = false
+
+# ============================================
+# Load Balancer Configuration
+# ============================================
+
+alb_enable_deletion_protection = true
+alb_enable_http2               = true
+alb_idle_timeout               = 60
+alb_enable_access_logs         = true
+alb_access_logs_bucket         = ""  # Leave empty for auto-generated name
+
+# SSL Certificate ARN (leave empty to create self-signed)
+ssl_certificate_arn = ""
+
+# ============================================
+# Security Configuration
+# ============================================
+
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
+
+# CIDR blocks allowed to access resources
+allowed_ssh_cidr_blocks   = ["0.0.0.0/0"]  # Restrict in production!
+allowed_https_cidr_blocks = ["0.0.0.0/0"]
+
+# Access Methods
+enable_bastion         = false  # Set to true if you need SSH bastion
+enable_session_manager = true   # AWS Systems Manager Session Manager
+
+# ============================================
+# Monitoring and Logging
+# ============================================
+
+enable_cloudwatch_monitoring   = true
+enable_detailed_monitoring     = true
+cloudwatch_log_retention_days  = 30
+
+# ============================================
+# Instance Protection
+# ============================================
+
+enable_termination_protection = true
+instance_tenancy              = "default"  # default, dedicated, or host
+
+# ============================================
+# Cost Optimization
+# ============================================
+
+# WARNING: Spot instances not recommended for production!
+enable_spot_instances = false
+spot_max_price        = ""  # Leave empty for on-demand price
+
+# Auto-scaling for OpenShift workers
+enable_auto_scaling = false
+worker_min_size     = 7
+worker_max_size     = 10
+
+# ============================================
+# Tags
+# ============================================
+
+tags = {
+  Project     = "Infrastructure"
+  Environment = "Production"
+  ManagedBy   = "Terraform"
+  Owner       = "DevOps Team"
+  CostCenter  = "Engineering"
+}
+
+vm_tags = {
+  Component = "VM"
+  Purpose   = "General Compute"
+}
+
+openshift_tags = {
+  Component = "OpenShift"
+  Purpose   = "Container Platform"
+}
