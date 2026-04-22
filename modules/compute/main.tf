@@ -100,19 +100,3 @@ resource "aws_instance" "main" {
     ignore_changes = [ami]
   }
 }
-
-# ============================================
-# CloudWatch Log Group
-# ============================================
-
-resource "aws_cloudwatch_log_group" "main" {
-  name              = var.cloudwatch_log_group
-  retention_in_days = var.log_retention_days
-
-  tags = merge(
-    var.tags,
-    {
-      Name = var.cloudwatch_log_group
-    }
-  )
-}

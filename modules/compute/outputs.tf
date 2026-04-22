@@ -17,6 +17,11 @@ output "vm_private_ips" {
   value       = aws_instance.main[*].private_ip
 }
 
+output "vm_availability_zones" {
+  description = "Availability zones of instances"
+  value       = aws_instance.main[*].availability_zone
+}
+
 output "vm_instance_names" {
   description = "Names of instances"
   value       = aws_instance.main[*].tags.Name

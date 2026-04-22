@@ -121,9 +121,9 @@ resource "null_resource" "cidr_validation" {
 }
 
 resource "aws_vpc_peering_connection" "vm_to_openshift" {
-  vpc_id        = module.vm_networking.vpc_id
-  peer_vpc_id   = module.openshift_networking.vpc_id
-  auto_accept   = true
+  vpc_id      = module.vm_networking.vpc_id
+  peer_vpc_id = module.openshift_networking.vpc_id
+  auto_accept = true
 
   tags = merge(
     local.common_tags,
@@ -217,11 +217,9 @@ module "storage" {
   kms_key_id = var.ebs_kms_key_id
 
   # Attachment Configuration
-  instance_ids = module.compute.vm_instance_ids
-  device_name  = "/dev/sdf"
-
-  # Availability Zones
-  availability_zones = local.azs
+  instance_ids                = module.compute.vm_instance_ids
+  instance_availability_zones = module.compute.vm_availability_zones
+  device_name                 = "/dev/sdf"
 
   # Snapshot Configuration
   enable_snapshots        = var.enable_ebs_snapshots
@@ -278,9 +276,6 @@ module "openshift" {
   enable_detailed_monitoring = var.enable_detailed_monitoring
   cloudwatch_log_group       = local.openshift_log_group
   log_retention_days         = var.cloudwatch_log_retention_days
-
-  # Pull Secret
-  pull_secret_path = var.openshift_pull_secret_path
 
   # Tags
   tags = local.openshift_resource_tags

@@ -47,8 +47,8 @@ variable "device_name" {
   type        = string
 }
 
-variable "availability_zones" {
-  description = "List of availability zones"
+variable "instance_availability_zones" {
+  description = "Availability zone for each target instance, aligned by index with instance_ids"
   type        = list(string)
 }
 

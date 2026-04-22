@@ -30,7 +30,6 @@ openshift_worker_instance_type         = "m5.4xlarge"  # 16 vCPU x 96GB RAM
 openshift_control_plane_count          = 3
 openshift_control_plane_instance_type  = "m5.xlarge"   # 4 vCPU x 16GB RAM
 openshift_root_volume_size             = 120
-openshift_pull_secret_path             = "~/.openshift/pull-secret.json"
 
 # ============================================
 # Storage Configuration
@@ -94,7 +93,6 @@ enable_session_manager = true   # AWS Systems Manager Session Manager
 # Monitoring and Logging
 # ============================================
 
-enable_cloudwatch_monitoring   = true
 enable_detailed_monitoring     = true
 cloudwatch_log_retention_days  = 30
 
@@ -103,20 +101,6 @@ cloudwatch_log_retention_days  = 30
 # ============================================
 
 enable_termination_protection = true
-instance_tenancy              = "default"  # default, dedicated, or host
-
-# ============================================
-# Cost Optimization
-# ============================================
-
-# WARNING: Spot instances not recommended for production!
-enable_spot_instances = false
-spot_max_price        = ""  # Leave empty for on-demand price
-
-# Auto-scaling for OpenShift workers
-enable_auto_scaling = false
-worker_min_size     = 7
-worker_max_size     = 10
 
 # ============================================
 # Tags

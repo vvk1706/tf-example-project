@@ -357,3 +357,41 @@ Update complete.
 Validation passed with [`terraform validate`](provider.tf:5).
 -----------------------------------------------------------------
 >please perform a code review for the project. please add (not substitute) findings to CODE_REVIEW.md
+-----------------------------------------------------------------
+recommendations implemented one-by-one
+Approved changes applied:
+
+- HIGH #14: made shared NAT mode naming robust in [modules/networking/main.tf](modules/networking/main.tf) by using a shared-name path instead of per-AZ indexing
+- MEDIUM #15: removed unused OpenShift pull secret wiring from [main.tf](main.tf) and [modules/openshift/variables.tf](modules/openshift/variables.tf)
+- MEDIUM #17: removed duplicate CloudWatch log group resources from [modules/compute/main.tf](modules/compute/main.tf) and [modules/openshift/main.tf](modules/openshift/main.tf), keeping ownership in [main.tf](main.tf)
+- LOW #18: removed unused [`enable_cloudwatch_monitoring`](variables.tf:307) from [variables.tf](variables.tf)
+
+Skipped by choice:
+- MEDIUM #16: certificate handling change in [modules/load-balancer/main.tf](modules/load-balancer/main.tf)
+-----------------------------------------------------------------
+>please perform a code review for the project. please add (not substitute) findings to CODE_REVIEW.md. please provide a findings summary
+-----------------------------------------------------------------
+
+Review current project state for additional findings after recent fixes
+Inspect remaining root and module Terraform files
+Append new findings to [CODE_REVIEW.md](CODE_REVIEW.md)
+Provide a findings summary
+-----------------------------------------------------------------
+>please address recent findings
+Review current project state for additional findings after recent fixes
+Inspect remaining root and module Terraform files
+Append new findings to CODE_REVIEW.md
+Provide a findings summary
+Remove stale and unsupported inputs from terraform.tfvars.example
+Remove unused root variables that expose unimplemented features
+Make storage volume AZ assignment derive from target instances
+Validate Terraform configuration after fixing all issues
+-----------------------------------------------------------------
+terraform fmt -recursive && terraform init -backend=false && terraform validate
+
+Review findings addressed successfully.
+
+- Cleaned [terraform.tfvars.example](terraform.tfvars.example) to remove stale and unsupported inputs
+- Removed unused feature flags from [variables.tf](variables.tf)
+- Fixed storage AZ mapping by passing instance AZs from [modules/compute/outputs.tf](modules/compute/outputs.tf) into [main.tf](main.tf) and [modules/storage/main.tf](modules/storage/main.tf)
+- Validation passed with [`terraform validate`](main.tf:205)

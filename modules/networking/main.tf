@@ -116,7 +116,7 @@ resource "aws_nat_gateway" "main" {
   tags = merge(
     var.tags,
     {
-      Name = "${var.vpc_name}-nat-${var.availability_zones[count.index]}"
+      Name = var.nat_gateway_per_az ? "${var.vpc_name}-nat-${var.availability_zones[count.index]}" : "${var.vpc_name}-nat-shared"
     }
   )
 

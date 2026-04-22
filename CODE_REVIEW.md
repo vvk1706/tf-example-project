@@ -502,5 +502,144 @@ This is a **well-architected Terraform project** with comprehensive infrastructu
 
 ---
 
-**Review Completed**: 2026-04-21  
+**Review Completed**: 2026-04-21
 **Next Review**: After critical fixes are applied
+
+---
+
+## Additional Findings (2026-04-22)
+
+### 🟡 HIGH #14: NAT Gateway Single-AZ Mode Breaks When `nat_gateway_per_az = false`
+**File**: [`modules/networking/main.tf:119`](modules/networking/main.tf:119)
+**Severity**: HIGH
+**Issue**: The NAT gateway name always indexes [`var.availability_zones[count.index]`](modules/networking/main.tf:119), even when only one NAT gateway is created for the whole VPC.
+
+```hcl
+Name = "${var.vpc_name}-nat-${var.availability_zones[count.index]}"
+```
+
+**Problem**: When [`nat_gateway_per_az`](variables.tf:211) is set to `false`, only one NAT gateway is created but private subnets in other AZs still depend on a single route table. The resource itself can still be created, but the current naming and indexing logic assumes per-AZ semantics throughout the resource block. This makes the “single NAT per VPC” path fragile and easy to break during future refactors.
+
+**Recommended Fix**:
+```hcl
+Name = var.nat_gateway_per_az ?
+  "${var.vpc_name}-nat-${var.availability_zones[count.index]}" :
+  "${var.vpc_name}-nat-shared"
+```
+
+**Impact**: The advertised cost-saving deployment mode is not robustly implemented and may behave inconsistently when used outside the default HA path.
+
+---
+
+### 🟠 MEDIUM #15: OpenShift Pull Secret Path Is Never Used
+**File**: [`main.tf:283`](main.tf:283), [`modules/openshift/variables.tf:125`](modules/openshift/variables.tf:125)
+**Severity**: MEDIUM
+**Issue**: The root module passes [`pull_secret_path`](main.tf:283) into the OpenShift module, but the module never reads the file or uses the value in any resource.
+
+**Problem**: Users may believe the pull secret is incorporated into cluster bootstrapping, but it currently has no effect on provisioning. This creates a false sense of readiness for OpenShift installation.
+
+**Recommended Fix**:
+- Either wire [`var.pull_secret_path`](modules/openshift/variables.tf:125) into the bootstrap/install workflow
+- Or remove the variable until the installation automation consumes it
+
+**Impact**: Deployment documentation and runtime behavior are misaligned; OpenShift installation will still require additional manual steps not represented in Terraform.
+
+---
+
+### 🟠 MEDIUM #16: Self-Signed ACM Certificate Resource Is Not Valid for Public ALB Use
+**File**: [`modules/load-balancer/main.tf:216`](modules/load-balancer/main.tf:216)
+**Severity**: MEDIUM
+**Issue**: The module attempts to create an ACM certificate directly from a locally generated self-signed certificate when [`ssl_certificate_arn`](variables.tf:251) is empty.
+
+```hcl
+resource "aws_acm_certificate" "self_signed" {
+  count            = var.ssl_certificate_arn == "" ? 1 : 0
+  private_key      = tls_private_key.self_signed[0].private_key_pem
+  certificate_body = tls_self_signed_cert.self_signed[0].cert_pem
+}
+```
+
+**Problem**: This produces an imported certificate that is not trusted by clients. For an internet-facing ALB, the fallback is not operationally equivalent to a valid ACM-issued certificate and can mislead users into expecting a usable HTTPS endpoint.
+
+**Recommended Fix**:
+- Make [`ssl_certificate_arn`](variables.tf:251) mandatory for production/public ALB usage
+- Or replace the fallback with ACM DNS validation using Route53-managed domains
+
+**Impact**: HTTPS may technically configure, but browsers and clients will reject the endpoint, causing failed access to the ALB and misleading deployment expectations.
+
+---
+
+### 🟠 MEDIUM #17: Root Log Groups Duplicate Responsibility with Module Log Groups
+**File**: [`main.tf:338`](main.tf:338), [`main.tf:350`](main.tf:350), [`modules/compute/main.tf:108`](modules/compute/main.tf:108), [`modules/openshift/main.tf:202`](modules/openshift/main.tf:202)
+**Severity**: MEDIUM
+**Issue**: The root configuration creates CloudWatch log groups for VM and OpenShift workloads, while the compute and OpenShift modules also create log groups using the same names.
+
+**Problem**: This creates overlapping ownership for the same resource names. On apply, one layer will attempt to create a log group that the other already manages, resulting in name conflicts or unclear ownership boundaries.
+
+**Recommended Fix**:
+- Manage workload log groups only in the root module and pass names into child modules without creating them there
+- Or remove the root-level log groups and let each module fully own its corresponding log group
+
+**Impact**: Terraform apply can fail with `ResourceAlreadyExistsException`, and long-term maintenance becomes harder because responsibility is split across module boundaries.
+
+---
+
+### 🟢 LOW #18: `enable_cloudwatch_monitoring` Variable Is Declared but Never Used
+**File**: [`variables.tf:307`](variables.tf:307)
+**Severity**: LOW
+**Issue**: [`enable_cloudwatch_monitoring`](variables.tf:307) is defined in the root module, but no resource or module input references it.
+
+**Problem**: Dead configuration surfaces increase maintenance overhead and make operators think monitoring can be toggled independently when it currently cannot.
+
+**Recommended Fix**:
+- Remove the unused variable
+- Or connect it to the relevant module/resource behavior
+
+**Impact**: Configuration intent is unclear and user expectations may not match actual infrastructure behavior.
+
+---
+
+## Additional Findings (2026-04-22, follow-up)
+
+### 🟠 MEDIUM #19: Example tfvars Still Documents Removed and Unused Inputs
+**File**: [`terraform.tfvars.example`](terraform.tfvars.example)
+**Severity**: MEDIUM
+**Issue**: The example configuration still includes inputs that are no longer declared or consumed by the root module, including [`openshift_pull_secret_path`](terraform.tfvars.example:33) and [`enable_cloudwatch_monitoring`](terraform.tfvars.example:97). It also documents unsupported knobs such as [`enable_spot_instances`](terraform.tfvars.example:113) and [`enable_auto_scaling`](terraform.tfvars.example:117), which have root variables but do not affect any resources.
+
+**Problem**: Copying this example into a real [`terraform.tfvars`](terraform.tfvars.example) file will either fail validation with undeclared arguments or mislead operators into thinking these settings are implemented. This creates a drift between the documented interface and the actual Terraform contract.
+
+**Recommended Fix**:
+- Remove stale entries such as [`openshift_pull_secret_path`](terraform.tfvars.example:33) and [`enable_cloudwatch_monitoring`](terraform.tfvars.example:97)
+- Clearly separate placeholder future options from supported inputs, or remove unsupported toggles until implemented
+
+**Impact**: Operators can hit immediate plan failures or assume capabilities exist when they do not, reducing trust in the example configuration.
+
+---
+
+### 🟠 MEDIUM #20: Root Variables Expose Features That Are Never Implemented
+**File**: [`variables.tf:383`](variables.tf:383), [`variables.tf:397`](variables.tf:397), [`variables.tf:409`](variables.tf:409)
+**Severity**: MEDIUM
+**Issue**: Several root variables advertise configurable behaviors that are never used anywhere in the configuration, including [`instance_tenancy`](variables.tf:383), [`enable_spot_instances`](variables.tf:397), [`spot_max_price`](variables.tf:403), [`enable_auto_scaling`](variables.tf:409), [`worker_min_size`](variables.tf:415), and [`worker_max_size`](variables.tf:421).
+
+**Problem**: These variables expand the public API of the module without any backing resources or conditionals. Users can set them successfully, but the infrastructure will not change, which makes the configuration surface misleading.
+
+**Recommended Fix**:
+- Remove unused variables until the corresponding features are actually implemented
+- Or wire them into concrete resources and validations so that setting them has observable effect
+
+**Impact**: The module interface overpromises functionality, making operations and troubleshooting harder because effective and ineffective settings are mixed together.
+
+---
+
+### 🟢 LOW #21: Storage Module Assigns Volume AZs Independently of Target Instances
+**File**: [`modules/storage/main.tf:11`](modules/storage/main.tf:11), [`modules/storage/main.tf:31`](modules/storage/main.tf:31)
+**Severity**: LOW
+**Issue**: The storage module chooses EBS volume availability zones by cycling through [`var.availability_zones`](modules/storage/main.tf:11), then attaches each volume to [`var.instance_ids[count.index]`](modules/storage/main.tf:31) without deriving the AZ from the target instance itself.
+
+**Problem**: This works only while the caller guarantees that instance ordering and AZ ordering remain perfectly aligned. Any future change in subnet placement, instance distribution, or caller ordering can produce cross-AZ attachment attempts, which AWS rejects.
+
+**Recommended Fix**:
+- Pass per-instance availability zones into the module alongside [`instance_ids`](modules/storage/variables.tf:40)
+- Or create volumes from a data structure that pairs each instance ID with its actual AZ
+
+**Impact**: The current contract is fragile and can fail during future scaling or refactoring even though the module interface appears generic.

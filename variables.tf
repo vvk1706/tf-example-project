@@ -304,12 +304,6 @@ variable "ebs_snapshot_retention_days" {
   default     = 7
 }
 
-variable "enable_cloudwatch_monitoring" {
-  description = "Enable detailed CloudWatch monitoring"
-  type        = bool
-  default     = true
-}
-
 variable "cloudwatch_log_retention_days" {
   description = "Number of days to retain CloudWatch logs"
   type        = number
@@ -384,48 +378,4 @@ variable "enable_detailed_monitoring" {
   description = "Enable detailed monitoring for EC2 instances"
   type        = bool
   default     = true
-}
-
-variable "instance_tenancy" {
-  description = "Instance tenancy (default, dedicated, host)"
-  type        = string
-  default     = "default"
-  validation {
-    condition     = contains(["default", "dedicated", "host"], var.instance_tenancy)
-    error_message = "Instance tenancy must be default, dedicated, or host"
-  }
-}
-
-# ============================================
-# Cost Optimization Variables
-# ============================================
-
-variable "enable_spot_instances" {
-  description = "Use spot instances for non-critical workloads (not recommended for production)"
-  type        = bool
-  default     = false
-}
-
-variable "spot_max_price" {
-  description = "Maximum price for spot instances (leave empty for on-demand price)"
-  type        = string
-  default     = ""
-}
-
-variable "enable_auto_scaling" {
-  description = "Enable auto-scaling for OpenShift worker nodes"
-  type        = bool
-  default     = false
-}
-
-variable "worker_min_size" {
-  description = "Minimum number of worker nodes (if auto-scaling enabled)"
-  type        = number
-  default     = 7
-}
-
-variable "worker_max_size" {
-  description = "Maximum number of worker nodes (if auto-scaling enabled)"
-  type        = number
-  default     = 10
 }

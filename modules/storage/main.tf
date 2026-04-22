@@ -8,7 +8,7 @@ terraform {
 
 resource "aws_ebs_volume" "main" {
   count             = var.volume_count
-  availability_zone = var.availability_zones[count.index % length(var.availability_zones)]
+  availability_zone = var.instance_availability_zones[count.index]
   size              = var.volume_size
   type              = var.volume_type
   iops              = var.volume_type == "gp3" || var.volume_type == "io1" || var.volume_type == "io2" ? var.iops : null
