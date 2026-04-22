@@ -1,3 +1,7 @@
+terraform {
+  required_version = ">= 1.5.0"
+}
+
 # ============================================
 # Load Balancer Module - Application Load Balancer
 # ============================================
@@ -20,35 +24,39 @@ resource "aws_security_group" "alb" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "https" {
+  for_each = toset(var.allowed_cidr_blocks)
+
   security_group_id = aws_security_group.alb.id
-  description       = "Allow HTTPS inbound"
-  
+  description       = "Allow HTTPS inbound from ${each.value}"
+
   from_port   = 443
   to_port     = 443
   ip_protocol = "tcp"
-  cidr_ipv4   = "0.0.0.0/0"
+  cidr_ipv4   = each.value
 
   tags = merge(
     var.tags,
     {
-      Name = "allow-https"
+      Name = "allow-https-${replace(each.value, "/", "-")}"
     }
   )
 }
 
 resource "aws_vpc_security_group_ingress_rule" "http" {
+  for_each = toset(var.allowed_cidr_blocks)
+
   security_group_id = aws_security_group.alb.id
-  description       = "Allow HTTP inbound"
-  
+  description       = "Allow HTTP inbound from ${each.value}"
+
   from_port   = 80
   to_port     = 80
   ip_protocol = "tcp"
-  cidr_ipv4   = "0.0.0.0/0"
+  cidr_ipv4   = each.value
 
   tags = merge(
     var.tags,
     {
-      Name = "allow-http"
+      Name = "allow-http-${replace(each.value, "/", "-")}"
     }
   )
 }
@@ -56,7 +64,7 @@ resource "aws_vpc_security_group_ingress_rule" "http" {
 resource "aws_vpc_security_group_egress_rule" "all" {
   security_group_id = aws_security_group.alb.id
   description       = "Allow all outbound traffic"
-  
+
   ip_protocol = "-1"
   cidr_ipv4   = "0.0.0.0/0"
 
@@ -80,8 +88,8 @@ resource "aws_lb" "main" {
   subnets            = var.subnet_ids
 
   enable_deletion_protection = var.enable_deletion_protection
-  enable_http2              = var.enable_http2
-  idle_timeout              = var.idle_timeout
+  enable_http2               = var.enable_http2
+  idle_timeout               = var.idle_timeout
 
   dynamic "access_logs" {
     for_each = var.enable_access_logs ? [1] : []

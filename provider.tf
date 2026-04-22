@@ -42,7 +42,6 @@ provider "aws" {
         Project     = var.project_name
         Environment = var.environment
         ManagedBy   = "Terraform"
-        CreatedAt   = timestamp()
       },
       var.tags
     )
@@ -214,8 +213,8 @@ locals {
   openshift_instance_profile_name = "${local.name_prefix}-openshift-profile"
 
   # Load balancer names
-  alb_name            = "${local.name_prefix}-alb"
-  vm_target_group     = "${local.name_prefix}-vm-tg"
+  alb_name               = "${local.name_prefix}-alb"
+  vm_target_group        = "${local.name_prefix}-vm-tg"
   openshift_target_group = "${local.name_prefix}-openshift-tg"
 
   # CloudWatch log group names
@@ -228,7 +227,7 @@ locals {
   backup_plan_name  = "${local.name_prefix}-backup-plan"
 
   # ODF configuration
-  odf_device_count = ceil(var.odf_storage_size / var.odf_device_size)
+  odf_device_count       = ceil(var.odf_storage_size / var.odf_device_size)
   odf_devices_per_worker = ceil(local.odf_device_count / var.openshift_worker_count)
 }
 
@@ -239,18 +238,18 @@ locals {
 output "debug_local_variables" {
   description = "Local variables for debugging"
   value = {
-    account_id               = local.account_id
-    region                   = local.region
-    availability_zones       = local.azs
-    name_prefix              = local.name_prefix
-    vm_ami_id                = local.vm_ami_id
-    openshift_ami_id         = local.openshift_ami_id
-    vm_private_subnet_cidrs  = local.vm_private_subnet_cidrs
-    vm_public_subnet_cidrs   = local.vm_public_subnet_cidrs
+    account_id                     = local.account_id
+    region                         = local.region
+    availability_zones             = local.azs
+    name_prefix                    = local.name_prefix
+    vm_ami_id                      = local.vm_ami_id
+    openshift_ami_id               = local.openshift_ami_id
+    vm_private_subnet_cidrs        = local.vm_private_subnet_cidrs
+    vm_public_subnet_cidrs         = local.vm_public_subnet_cidrs
     openshift_private_subnet_cidrs = local.openshift_private_subnet_cidrs
     openshift_public_subnet_cidrs  = local.openshift_public_subnet_cidrs
-    openshift_cluster_domain = local.openshift_cluster_domain
-    odf_device_count         = local.odf_device_count
-    odf_devices_per_worker   = local.odf_devices_per_worker
+    openshift_cluster_domain       = local.openshift_cluster_domain
+    odf_device_count               = local.odf_device_count
+    odf_devices_per_worker         = local.odf_devices_per_worker
   }
 }

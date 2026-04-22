@@ -208,11 +208,11 @@ output "openshift_instance_profile_arn" {
 output "odf_storage_configuration" {
   description = "ODF storage configuration details"
   value = {
-    total_capacity_gb    = var.odf_storage_size
-    device_size_gb       = var.odf_device_size
-    devices_per_worker   = local.odf_devices_per_worker
-    total_device_count   = local.odf_device_count
-    worker_count         = var.openshift_worker_count
+    total_capacity_gb  = var.odf_storage_size
+    device_size_gb     = var.odf_device_size
+    devices_per_worker = local.odf_devices_per_worker
+    total_device_count = local.odf_device_count
+    worker_count       = var.openshift_worker_count
   }
 }
 
@@ -239,11 +239,11 @@ output "connection_info" {
   value = {
     alb_url = "https://${module.load_balancer.alb_dns_name}"
     vm_access = {
-      method = var.enable_session_manager ? "AWS Systems Manager Session Manager" : "SSH via Bastion"
+      method  = var.enable_session_manager ? "AWS Systems Manager Session Manager" : "SSH via Bastion"
       command = var.enable_session_manager ? "aws ssm start-session --target <instance-id>" : "ssh -i ~/.ssh/${local.ssh_key_name} ec2-user@<vm-private-ip>"
     }
     openshift_console = "https://console-openshift-console.apps.${local.openshift_cluster_domain}"
-    openshift_api = "https://api.${local.openshift_cluster_domain}:6443"
+    openshift_api     = "https://api.${local.openshift_cluster_domain}:6443"
   }
 }
 
@@ -255,34 +255,34 @@ output "estimated_monthly_cost" {
   description = "Estimated monthly cost breakdown (USD)"
   value = {
     vm_instances = {
-      count = var.vm_count
-      type = var.vm_instance_type
+      count          = var.vm_count
+      type           = var.vm_instance_type
       estimated_cost = "$${var.vm_count * 400}"
     }
     openshift_control_plane = {
-      count = var.openshift_control_plane_count
-      type = var.openshift_control_plane_instance_type
+      count          = var.openshift_control_plane_count
+      type           = var.openshift_control_plane_instance_type
       estimated_cost = "$${var.openshift_control_plane_count * 150}"
     }
     openshift_workers = {
-      count = var.openshift_worker_count
-      type = var.openshift_worker_instance_type
+      count          = var.openshift_worker_count
+      type           = var.openshift_worker_instance_type
       estimated_cost = "$${var.openshift_worker_count * 600}"
     }
     ebs_storage = {
-      vm_volumes = "${var.vm_count * var.vm_ebs_volume_size}GB"
-      odf_storage = "${var.odf_storage_size}GB"
+      vm_volumes     = "${var.vm_count * var.vm_ebs_volume_size}GB"
+      odf_storage    = "${var.odf_storage_size}GB"
       estimated_cost = "$${(var.vm_count * var.vm_ebs_volume_size + var.odf_storage_size) * 0.10}"
     }
     load_balancer = {
       estimated_cost = "$20"
     }
     nat_gateway = {
-      count = var.nat_gateway_per_az ? 6 : 2
+      count          = var.nat_gateway_per_az ? 6 : 2
       estimated_cost = "$${(var.nat_gateway_per_az ? 6 : 2) * 45}"
     }
     total_estimated = "$${var.vm_count * 400 + var.openshift_control_plane_count * 150 + var.openshift_worker_count * 600 + (var.vm_count * var.vm_ebs_volume_size + var.odf_storage_size) * 0.10 + 20 + (var.nat_gateway_per_az ? 6 : 2) * 45}"
-    note = "Estimates are approximate and may vary based on region, usage, and AWS pricing changes"
+    note            = "Estimates are approximate and may vary based on region, usage, and AWS pricing changes"
   }
 }
 
@@ -293,27 +293,27 @@ output "estimated_monthly_cost" {
 output "deployment_summary" {
   description = "Summary of deployed resources"
   value = {
-    region = var.aws_region
-    project = var.project_name
+    region      = var.aws_region
+    project     = var.project_name
     environment = var.environment
     vpcs = {
-      vm_vpc = module.vm_networking.vpc_id
+      vm_vpc        = module.vm_networking.vpc_id
       openshift_vpc = module.openshift_networking.vpc_id
     }
     compute = {
-      vm_instances = var.vm_count
+      vm_instances            = var.vm_count
       openshift_control_plane = var.openshift_control_plane_count
-      openshift_workers = var.openshift_worker_count
-      total_instances = var.vm_count + var.openshift_control_plane_count + var.openshift_worker_count
+      openshift_workers       = var.openshift_worker_count
+      total_instances         = var.vm_count + var.openshift_control_plane_count + var.openshift_worker_count
     }
     storage = {
       vm_ebs_volumes = "${var.vm_count * var.vm_ebs_volume_size}GB"
-      odf_storage = "${var.odf_storage_size}GB"
-      total_storage = "${var.vm_count * var.vm_ebs_volume_size + var.odf_storage_size}GB"
+      odf_storage    = "${var.odf_storage_size}GB"
+      total_storage  = "${var.vm_count * var.vm_ebs_volume_size + var.odf_storage_size}GB"
     }
     networking = {
       load_balancer = module.load_balancer.alb_dns_name
-      nat_gateways = var.nat_gateway_per_az ? 6 : 2
+      nat_gateways  = var.nat_gateway_per_az ? 6 : 2
     }
   }
 }
@@ -324,7 +324,7 @@ output "deployment_summary" {
 
 output "next_steps" {
   description = "Next steps after infrastructure deployment"
-  value = <<-EOT
+  value       = <<-EOT
     Infrastructure deployment complete! Follow these steps:
     
     1. Verify VM instances:

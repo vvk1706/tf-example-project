@@ -1,3 +1,7 @@
+terraform {
+  required_version = ">= 1.5.0"
+}
+
 # ============================================
 # Compute Module - EC2 Instances
 # ============================================
@@ -69,8 +73,8 @@ resource "aws_instance" "main" {
     encrypted             = true
   }
 
-  monitoring                  = var.enable_detailed_monitoring
-  disable_api_termination     = var.enable_termination_protection
+  monitoring                           = var.enable_detailed_monitoring
+  disable_api_termination              = var.enable_termination_protection
   instance_initiated_shutdown_behavior = "stop"
 
   metadata_options {
@@ -91,6 +95,10 @@ resource "aws_instance" "main" {
       Index = count.index + 1
     }
   )
+
+  lifecycle {
+    ignore_changes = [ami]
+  }
 }
 
 # ============================================

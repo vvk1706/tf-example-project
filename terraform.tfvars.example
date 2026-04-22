@@ -83,7 +83,7 @@ ssl_certificate_arn = ""
 ssh_public_key_path = "~/.ssh/id_rsa.pub"
 
 # CIDR blocks allowed to access resources
-allowed_ssh_cidr_blocks   = ["0.0.0.0/0"]  # Restrict in production!
+allowed_ssh_cidr_blocks   = ["YOUR_IP/32"]  # Replace with your public IP before applying
 allowed_https_cidr_blocks = ["0.0.0.0/0"]
 
 # Access Methods

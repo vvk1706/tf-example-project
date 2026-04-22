@@ -340,4 +340,20 @@ I've conducted a comprehensive code review of the Terraform AWS infrastructure p
 
 The project is well-architected with excellent documentation. Once critical issues are resolved, it will be ready for AWS deployment.
 ---------------------------------------------------------------
-> 
+> please apply recommendations, fixes and next steps from the review report
+
+ToDo list created
+Review [CODE_REVIEW.md](CODE_REVIEW.md) and identify required changes
+Inspect impacted Terraform and script files
+Apply recommended fixes and next steps
+Validate updated configuration for consistency
+---------------------------------------------------------------
+Update complete.
+
+- Fixed critical Terraform issues in [`main.tf`](main.tf), [`provider.tf`](provider.tf), [`variables.tf`](variables.tf), [`modules/openshift/main.tf`](modules/openshift/main.tf), and [`modules/openshift/variables.tf`](modules/openshift/variables.tf)
+- Tightened ingress handling in [`modules/networking/main.tf`](modules/networking/main.tf) and [`modules/load-balancer/main.tf`](modules/load-balancer/main.tf), updated SSH guidance in [`terraform.tfvars.example`](terraform.tfvars.example)
+- Added module version constraints in [`modules/compute/main.tf`](modules/compute/main.tf), [`modules/networking/main.tf`](modules/networking/main.tf), [`modules/load-balancer/main.tf`](modules/load-balancer/main.tf), [`modules/openshift/main.tf`](modules/openshift/main.tf), and [`modules/storage/main.tf`](modules/storage/main.tf)
+
+Validation passed with [`terraform validate`](provider.tf:5).
+-----------------------------------------------------------------
+>please perform a code review for the project. please add (not substitute) findings to CODE_REVIEW.md
